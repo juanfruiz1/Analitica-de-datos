@@ -17,7 +17,7 @@ RUTA_BPN = os.path.join(DIR_ACTUAL, "../data/raw/BPN.csv")
 RUTA_NHANES = os.path.join(DIR_ACTUAL, "../data/raw/NHANES.csv")
 
 #⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘#
-#creamos la función para la creación de la base de datos
+# creamos la función para la creación de la base de datos
 #⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘#
 
 def crear_base_datos():
@@ -30,10 +30,10 @@ def crear_base_datos():
     
     try:
         #⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘#
-        # 3. Cargar los CSV en Pandas
+        # 3. Cargar los CSV en Pandas (CORREGIDO EL SEPARADOR AQUÍ)
         #⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘#
         
-        df_bpn = pd.read_csv(RUTA_BPN, sep=';') # Ajusta el 'sep' si el CSV usa comas (',')#
+        df_bpn = pd.read_csv(RUTA_BPN, sep=',') 
         
         df_nhanes = pd.read_csv(RUTA_NHANES, sep=',')
         
