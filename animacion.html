@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animación 3D - Vanta</title>
+    <style>
+        /* Quitamos los márgenes sencillamente para que el fondo ocupe absolutamente toda la pantalla */
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+        }
+        
+        /* creamos cajas */
+        .s-page-1, .s-section-1, .s-section {
+            height: 100%;
+            width: 100%;
+        }
+
+        /* Un pequeño texto de prueba para ver que queda por encima del fondo */
+        .texto-prueba {
+            color: white; 
+            text-align: center; 
+            padding-top: 20%; 
+            font-family: sans-serif; 
+            font-size: 3rem;
+            position: relative; 
+            z-index: 1; /* Esto asegura que el texto no quede tapado por la animación */
+        }
+    </style>
+</head>
+<body>
+
+    <div class="s-page-1">
+        <div class="s-section-1">
+            <div class="s-section">
+                <h1 class="texto-prueba"> Mueve tu ratón por la pantalla 🖱️</h1>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r121/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.net.min.js"></script>
+    
+    <script>
+        // Inicializamos la animación
+        var setVanta = () => {
+            if (window.VANTA) window.VANTA.NET({
+                el: ".s-page-1 .s-section-1 .s-section", // Aquí busca la caja que creamos arriba
+                mouseControls: true,
+                touchControls: true,
+                gyroControls: false,
+                minHeight: 200.00,
+                minWidth: 200.00,
+                scale: 1.00,
+                scaleMobile: 1.00,
+                // podemos jugar ocn estos colores (están en formato hexadecimal)
+                color: 0x3fbbff, 
+                backgroundColor: 0x110c1f 
+            })
+        }
+        
+        // Ejecutamos la función inmediatamente al cargar la página
+        setVanta();
+    </script>
+
+</body>
+</html>
