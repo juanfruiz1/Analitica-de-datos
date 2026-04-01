@@ -47,34 +47,26 @@ components.html(vanta_html, width=0, height=0)
 #⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘#
 # Diseño CSS
 #⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘#
-#⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘#
-# Diseño CSS
-#⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘#
 st.markdown("""
 <style>
 .stApp, [data-testid="stAppViewContainer"], [data-testid="stHeader"] {
     background-color: transparent !important;
 }
 
-/* 1. Contenedores de "cristal" con contorno AZUL NEÓN */
 [data-testid="stExpander"], .stDataFrame, div[data-testid="stMetric"], .stTabs {
     background-color: rgba(15, 20, 30, 0.6) !important;
     backdrop-filter: blur(12px) !important;
     -webkit-backdrop-filter: blur(12px) !important;
     border-radius: 15px !important; 
-    /* Cambiamos el gris por un azul neón sutil (0.3 de opacidad para que no perturbe la vista y me de algo) */
     border: 1px solid rgba(0, 229, 255, 0.3) !important; 
 }
 
-/* 2. ESPACIADO PARA LAS PESTAÑAS (Tabs) */
-/* Añadimos margen arriba y a la izquierda para que el texto no choque y se vea horrible */
 .stTabs {
     padding-top: 15px !important;
     padding-left: 15px !important;
     padding-right: 15px !important;
 }
 
-/* Opcional: Cambiar la línea inferior de las pestañas que suele ser gris */
 div[data-baseweb="tab-highlight"] {
     background-color: #00e5ff !important;
 }
@@ -116,26 +108,25 @@ st.markdown(f"""
 tab1, tab2 = st.tabs(["Regresión (Valor club)", "Clasificación (Salud NHANES)"])
 
 #⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘#
-# PESTAÑA 1: FÚTBOL (VERSIÓN EXTENDIDA)
+# PESTAÑA 1: FÚTBOL (NUEVA VERSIÓN TRANSFERMARKT)
 #⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘#
 with tab1:
-    st.markdown("""<h2 style="margin: 0; padding: 0; line-height: 1; color: #4cc9f0;"> Monitor Financiero de Clubes (Análisis Profundo)</h2><br>""", unsafe_allow_html=True)
+    st.markdown("""<h2 style="margin: 0; padding: 0; line-height: 1; color: #4cc9f0;"> Monitor Financiero de Clubes (Transfermarkt)</h2><br>""", unsafe_allow_html=True)
     
     with st.expander("[ Panel de Filtros Fútbol ]", expanded=True):
-        # Usamos 4 columnas para que quepan bien todos los deslizadores
         col1_f, col2_f, col3_f, col4_f = st.columns(4)
         
         with col1_f:
-            opciones_liga = pd.read_sql_query("SELECT DISTINCT League FROM regresion_football", conexion)
-            filtro_liga = st.multiselect("Liga Competitiva:", opciones_liga['League'].dropna().tolist(), default=opciones_liga['League'].dropna().tolist()[:3])
-            columna_orden_f = st.selectbox("Ordenar por:", ["Price", "TotalGoalsLastSeason", "MatchesWonLastSeason", "TotalRevenueLastSeason"])
+            opciones_liga = pd.read_sql_query("SELECT DISTINCT LeagueName FROM regresion_football", conexion)
+            filtro_liga = st.multiselect("Liga Competitiva:", opciones_liga['LeagueName'].dropna().tolist(), default=opciones_liga['LeagueName'].dropna().tolist()[:3])
+            columna_orden_f = st.selectbox("Ordenar por:", ["SquadMarketValue", "TotalGoals", "TotalWins", "StadiumCapacity"])
             tipo_orden_f = st.radio("Dirección:", ["Descendente", "Ascendente"], key="dir_f")
             limite_f = st.number_input("Límite de registros:", 1, 5000, 100, key="lim_f")
             
         with col2_f:
-            rev_min, rev_max = st.slider("Ingresos (Millones):", 0, 1000, (0, 1000), 50)
-            cap_min, cap_max = st.slider("Capacidad del Estadio:", 10000, 100000, (10000, 100000), 5000)
-            age_min, age_max = st.slider("Edad Promedio:", 16, 40, (16, 40), 1)
+            val_min, val_max = st.slider("Valor Plantilla (Millones):", 0.0, 1500.0, (0.0, 1500.0), 10.0)
+            cap_min, cap_max = st.slider("Capacidad del Estadio:", 0, 100000, (0, 100000), 5000)
+            age_min, age_max = st.slider("Edad Promedio:", 16.0, 40.0, (16.0, 40.0), 0.5)
             
         with col3_f:
             goles_min, goles_max = st.slider("Goles Anotados:", 0, 150, (0, 150), 5)
@@ -147,22 +138,21 @@ with tab1:
 
     if st.button(" Consultar ", type="primary", use_container_width=True, key="btn_football"):
         
-        # Conectamos ABSOLUTAMENTE TODOS los deslizadores al WHERE del SQL
-        where_cond_f = f"""CAST(TotalRevenueLastSeason AS REAL) BETWEEN {rev_min} AND {rev_max} 
+        # Conectamos ABSOLUTAMENTE TODOS los deslizadores al WHERE del SQL adaptado al nuevo Dataset
+        where_cond_f = f"""CAST(SquadMarketValue AS REAL) BETWEEN {val_min} AND {val_max} 
                         AND CAST(StadiumCapacity AS REAL) BETWEEN {cap_min} AND {cap_max} 
                         AND CAST(AveragePlayerAge AS REAL) BETWEEN {age_min} AND {age_max}
-                        AND CAST(TotalGoalsLastSeason AS REAL) BETWEEN {goles_min} AND {goles_max}
-                        AND CAST(MatchesWonLastSeason AS REAL) BETWEEN {ganados_min} AND {ganados_max}
-                        AND CAST(MatchesDrawnLastSeason AS REAL) BETWEEN {empates_min} AND {empates_max}
-                        AND CAST(MatchesLostLastSeason AS REAL) BETWEEN {perdidos_min} AND {perdidos_max}"""
+                        AND CAST(TotalGoals AS REAL) BETWEEN {goles_min} AND {goles_max}
+                        AND CAST(TotalWins AS REAL) BETWEEN {ganados_min} AND {ganados_max}
+                        AND CAST(TotalDraws AS REAL) BETWEEN {empates_min} AND {empates_max}
+                        AND CAST(TotalLosses AS REAL) BETWEEN {perdidos_min} AND {perdidos_max}"""
         
         if filtro_liga:
             ligas_f_str = "', '".join(filtro_liga)
-            where_cond_f += f"\n  AND League IN ('{ligas_f_str}')"
+            where_cond_f += f"\n  AND LeagueName IN ('{ligas_f_str}')"
             
         dir_sql_f = "DESC" if tipo_orden_f == "Descendente" else "ASC"
 
-        # Organizado en dos columnas para mejor visualización
         col_res1, col_res2 = st.columns(2)
 
         with col_res1:
@@ -171,54 +161,54 @@ with tab1:
             st.code(q1_f, language="sql")
             st.dataframe(pd.read_sql_query(q1_f, conexion), use_container_width=True)
 
-            st.subheader("3. Impacto del Tipo de Propiedad en el Precio")
-            q3_f = f"SELECT OwnershipType as Propiedad, COUNT(*) as Equipos, ROUND(AVG(CAST(TotalRevenueLastSeason AS REAL)), 1) as Ingresos_Promedio, ROUND(AVG(CAST(Price AS REAL)), 1) as Precio_Mercado \nFROM regresion_football \nWHERE {where_cond_f} \nGROUP BY OwnershipType \nORDER BY Precio_Mercado DESC;"
+            st.subheader("3. Top 10 Clubes más Valiosos")
+            q3_f = f"SELECT ClubName as Club, LeagueName as Liga, ROUND(CAST(SquadMarketValue AS REAL), 2) as Valor_Millones \nFROM regresion_football \nWHERE {where_cond_f} \nORDER BY Valor_Millones DESC \nLIMIT 10;"
             st.code(q3_f, language="sql")
             st.dataframe(pd.read_sql_query(q3_f, conexion), use_container_width=True)
 
-            st.subheader("5. Cotización por Estilo de Juego")
-            q5_f = f"SELECT PlayingStyle as Estilo, COUNT(*) as Total_Equipos, ROUND(AVG(CAST(Price AS REAL)), 2) as Valor_Promedio \nFROM regresion_football \nWHERE {where_cond_f} \nGROUP BY PlayingStyle \nORDER BY Valor_Promedio DESC;"
+            st.subheader("5. Relación: Jugadores de Selección vs Valor")
+            q5_f = f"SELECT NationalTeamPlayers as Jugadores_Seleccion, COUNT(*) as Total_Equipos, ROUND(AVG(CAST(SquadMarketValue AS REAL)), 2) as Valor_Promedio_Millones \nFROM regresion_football \nWHERE {where_cond_f} \nGROUP BY NationalTeamPlayers \nORDER BY Jugadores_Seleccion DESC \nLIMIT 10;"
             st.code(q5_f, language="sql")
             st.dataframe(pd.read_sql_query(q5_f, conexion), use_container_width=True)
             
-            st.subheader("7. Balance de Fichajes (Gasto vs Ingreso)")
-            q7_f = f"SELECT League as Liga, ROUND(AVG(CAST(TransferSpendingLastSeason AS REAL)), 2) as Gasto_Fichajes, ROUND(AVG(CAST(TransferIncomeLastSeason AS REAL)), 2) as Ingreso_Ventas, ROUND(AVG(CAST(TransferIncomeLastSeason AS REAL) - CAST(TransferSpendingLastSeason AS REAL)), 2) as Balance_Neto \nFROM regresion_football \nWHERE {where_cond_f} \nGROUP BY League \nORDER BY Balance_Neto DESC;"
+            st.subheader("7. Indisciplina (Tarjetas Rojas y Amarillas)")
+            q7_f = f"SELECT ClubName as Club, CAST(TotalRedCards AS INTEGER) as Rojas, CAST(TotalYellowCards AS INTEGER) as Amarillas, ROUND(CAST(SquadMarketValue AS REAL), 2) as Valor_Millones \nFROM regresion_football \nWHERE {where_cond_f} \nORDER BY Rojas DESC, Amarillas DESC \nLIMIT 10;"
             st.code(q7_f, language="sql")
             st.dataframe(pd.read_sql_query(q7_f, conexion), use_container_width=True)
 
-            st.subheader("9. Formación Táctica y Goles Anotados")
-            q9_f = f"SELECT TeamFormation as Formacion, COUNT(*) as Equipos_Usando, ROUND(AVG(CAST(TotalGoalsLastSeason AS REAL)), 2) as Goles_Promedio_A_Favor, ROUND(AVG(CAST(Price AS REAL)), 2) as Precio_Mercado \nFROM regresion_football \nWHERE {where_cond_f} \nGROUP BY TeamFormation \nORDER BY Goles_Promedio_A_Favor DESC;"
+            st.subheader("9. Estadios más Gigantes y su Cotización")
+            q9_f = f"SELECT ClubName as Club, CAST(StadiumCapacity AS INTEGER) as Capacidad_Estadio, ROUND(CAST(SquadMarketValue AS REAL), 2) as Valor_Millones \nFROM regresion_football \nWHERE {where_cond_f} \nORDER BY Capacidad_Estadio DESC \nLIMIT 10;"
             st.code(q9_f, language="sql")
             st.dataframe(pd.read_sql_query(q9_f, conexion), use_container_width=True)
 
         with col_res2:
             st.subheader("2. Valoración Promedio por Liga")
-            q2_f = f"SELECT League as Liga, COUNT(*) as Equipos_Analizados, ROUND(AVG(CAST(Price AS REAL)),2) as Precio_Medio \nFROM regresion_football \nWHERE {where_cond_f} \nGROUP BY League \nORDER BY Precio_Medio DESC \nLIMIT 10;"
+            q2_f = f"SELECT LeagueName as Liga, COUNT(*) as Equipos_Analizados, ROUND(AVG(CAST(SquadMarketValue AS REAL)),2) as Valor_Promedio_Millones \nFROM regresion_football \nWHERE {where_cond_f} \nGROUP BY LeagueName \nORDER BY Valor_Promedio_Millones DESC \nLIMIT 10;"
             st.code(q2_f, language="sql")
             st.dataframe(pd.read_sql_query(q2_f, conexion), use_container_width=True)
 
-            st.subheader("4. Éxito Histórico vs Valoración de Mercado")
-            q4_f = f"SELECT NumberOfTrophies as Trofeos_Ganados, COUNT(*) as Equipos, ROUND(AVG(CAST(Price AS REAL)), 2) as Precio_Promedio \nFROM regresion_football \nWHERE {where_cond_f} \nGROUP BY NumberOfTrophies \nORDER BY CAST(NumberOfTrophies AS REAL) ASC;"
+            st.subheader("4. Eficiencia Ofensiva (Goles y Asistencias)")
+            q4_f = f"SELECT ClubName as Club, CAST(TotalGoals AS INTEGER) as Goles, CAST(TotalAssists AS INTEGER) as Asistencias, ROUND(CAST(SquadMarketValue AS REAL), 2) as Valor_Millones \nFROM regresion_football \nWHERE {where_cond_f} \nORDER BY Goles DESC \nLIMIT 10;"
             st.code(q4_f, language="sql")
             st.dataframe(pd.read_sql_query(q4_f, conexion), use_container_width=True)
 
-            st.subheader("6. Valor de las Marcas (Patrocinador y Camiseta)")
-            q6_f = f"SELECT MainSponsor as Patrocinador, KitManufacturer as Marca_Ropa, COUNT(*) as Equipos, ROUND(AVG(CAST(TotalRevenueLastSeason AS REAL)), 2) as Ingresos_Promedio, ROUND(AVG(CAST(Price AS REAL)), 2) as Valor_Promedio \nFROM regresion_football \nWHERE {where_cond_f} \nGROUP BY MainSponsor, KitManufacturer \nORDER BY Valor_Promedio DESC \nLIMIT 10;"
+            st.subheader("6. Físico de la Plantilla (Altura y Edad Media)")
+            q6_f = f"SELECT LeagueName as Liga, ROUND(AVG(CAST(AveragePlayerHeight AS REAL)), 2) as Altura_Promedio_cm, ROUND(AVG(CAST(AveragePlayerAge AS REAL)), 2) as Edad_Promedio \nFROM regresion_football \nWHERE {where_cond_f} \nGROUP BY LeagueName \nORDER BY Altura_Promedio_cm DESC \nLIMIT 10;"
             st.code(q6_f, language="sql")
             st.dataframe(pd.read_sql_query(q6_f, conexion), use_container_width=True)
 
-            st.subheader("8. Impacto de la Cantera (Youth Academy)")
-            q8_f = f"SELECT League as Liga, ROUND(AVG(CAST(YouthAcademyRating AS REAL)), 2) as Calidad_Cantera_Promedio, ROUND(AVG(CAST(AveragePlayerMarketValue AS REAL)), 2) as Valor_Por_Jugador \nFROM regresion_football \nWHERE {where_cond_f} \nGROUP BY League \nORDER BY Calidad_Cantera_Promedio DESC;"
+            st.subheader("8. Valor Promedio por País")
+            q8_f = f"SELECT Country as Pais, COUNT(*) as Equipos, ROUND(AVG(CAST(SquadMarketValue AS REAL)), 2) as Valor_Promedio_Millones \nFROM regresion_football \nWHERE {where_cond_f} \nGROUP BY Country \nORDER BY Valor_Promedio_Millones DESC \nLIMIT 10;"
             st.code(q8_f, language="sql")
             st.dataframe(pd.read_sql_query(q8_f, conexion), use_container_width=True)
 
-            st.subheader("10. Asistencia al Estadio vs Ingresos")
-            q10_f = f"SELECT StadiumType as Tipo_Estadio, ROUND(AVG(CAST(AverageAttendance AS REAL)), 2) as Asistencia_Media, ROUND(AVG(CAST(TotalRevenueLastSeason AS REAL)), 2) as Ingresos_Promedio \nFROM regresion_football \nWHERE {where_cond_f} \nGROUP BY StadiumType \nORDER BY Ingresos_Promedio DESC;"
+            st.subheader("10. Impacto de Partidos Jugados en Resultados")
+            q10_f = f"SELECT CAST(MatchesPlayed AS INTEGER) as Partidos_Jugados, ROUND(AVG(CAST(TotalGoals AS REAL)), 2) as Goles_Promedio, ROUND(AVG(CAST(TotalWins AS REAL)), 2) as Victorias_Promedio \nFROM regresion_football \nWHERE {where_cond_f} \nGROUP BY MatchesPlayed \nORDER BY Partidos_Jugados DESC \nLIMIT 10;"
             st.code(q10_f, language="sql")
             st.dataframe(pd.read_sql_query(q10_f, conexion), use_container_width=True)
 
 #⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘#
-# PESTAÑA 2: NHANES
+# PESTAÑA 2: NHANES (Intacta como la pediste)
 #⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘#
 with tab2:
     st.markdown("""<h2 style="margin: 0; padding: 0; line-height: 1; color: #4cc9f0;"> Explorador Metabólico (NHANES)</h2><br>""", unsafe_allow_html=True)
@@ -238,8 +228,6 @@ with tab2:
             limite_n = st.number_input("Cantidad:", 1, 6000, 100, key="lim_n")
 
     if st.button(" Consultar", type="primary", use_container_width=True, key="btn_n"):
-        
-        # APLICAMOS EL CAST(columna AS REAL) TAMBIÉN AQUÍ
         where_cond_n = f"""CAST(BMXBMI AS REAL) BETWEEN {bmi_min} AND {bmi_max} 
                         AND CAST(LBXGLU AS REAL) BETWEEN {glu_min} AND {glu_max} 
                         AND CAST(LBXIN AS REAL) BETWEEN {ins_min} AND {ins_max}"""
@@ -250,10 +238,6 @@ with tab2:
             
         dir_sql_n = "DESC" if dir_orden_n == "Descendente" else "ASC"
 
-        #⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘#
-        #ESTAS SON REALMENTE NUESTRAS CONSULTAS
-        #⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘#
-        
         st.subheader("1. Expedientes Clínicos")
         q1_n = f"SELECT * \nFROM clasificacion_nhanes \nWHERE {where_cond_n} \nORDER BY CAST({col_orden_n} AS REAL) {dir_sql_n} \nLIMIT {limite_n};"
         st.code(q1_n, language="sql")
