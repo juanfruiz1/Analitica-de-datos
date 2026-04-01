@@ -10,10 +10,10 @@ DIR_ACTUAL = os.path.dirname(os.path.abspath(__file__))
 RUTA_DB = os.path.join(DIR_ACTUAL, "../database/proyecto_analitica.db")
 
 #⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘#
-# Rutas de los archivos CSV originales:
+# Rutas de los archivos CSV originales (¡Actualizado para el fútbol!):
 #⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘#
 
-RUTA_BPN = os.path.join(DIR_ACTUAL, "../data/raw/BPN.csv")
+RUTA_FOOTBALL = os.path.join(DIR_ACTUAL, "../data/raw/FTP.csv")
 RUTA_NHANES = os.path.join(DIR_ACTUAL, "../data/raw/NHANES.csv")
 
 #⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘#
@@ -33,7 +33,7 @@ def crear_base_datos():
         # 3. Cargar los CSV en Pandas (CORREGIDO EL SEPARADOR AQUÍ)
         #⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘#
         
-        df_bpn = pd.read_csv(RUTA_BPN, sep=',') 
+        df_football = pd.read_csv(RUTA_FOOTBALL, sep=',') 
         
         df_nhanes = pd.read_csv(RUTA_NHANES, sep=',')
         
@@ -41,7 +41,7 @@ def crear_base_datos():
         # 4. Enviamos los datos a SQLite para crear las tablas
         #⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘#
         
-        df_bpn.to_sql('regresion_bpn', conexion, if_exists='replace', index=False)
+        df_football.to_sql('regresion_football', conexion, if_exists='replace', index=False)
         
         df_nhanes.to_sql('clasificacion_nhanes', conexion, if_exists='replace', index=False)
         
@@ -49,7 +49,7 @@ def crear_base_datos():
         # Mensaje puramente estético
         #⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘#
         
-        print("✅ ¡Éxito! Base de datos y tablas creadas correctamente en database/proyecto_analitica.db")
+        print("✅ ¡Éxito! Base de datos y tablas actualizadas correctamente en database/proyecto_analitica.db")
         
     #⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘#
     # En caso de error
