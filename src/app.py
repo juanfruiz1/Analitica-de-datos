@@ -7,12 +7,13 @@ import plotly.express as px
 import time
 
 #################################################################################
-################## RECORDAR PIP INSTALL STATSMODELS ###############################
+################## RECORDAR PIP INSTALL STATSMODELS #############################
 #################################################################################
 
 #⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘#
 # 1. CONFIGURACIÓN DE PÁGINA
 #⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘#
+
 st.set_page_config(page_title="Dashboard ", page_icon="🔵", layout="wide")
 
 #⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘#
@@ -107,7 +108,7 @@ p {
 """, unsafe_allow_html=True)
 
 # ⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘ #
-# FUNCIONES GLOBALES DE DISEÑO (PÉGALAS ARRIBA)
+# FUNCIONES GLOBALES DE DISEÑO 
 # ⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘ #
 
 def crear_tarjeta(icono, titulo, valor):
@@ -134,6 +135,7 @@ def card_correlacion(titulo, p_value, icono, color_borde="#00e5ff"):
 #⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘#
 # 4. CARGA DE DATOS (CSV)
 #⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘#
+
 @st.cache_data
 def load_data():
     base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
@@ -207,6 +209,7 @@ with st.sidebar:
 #⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘#
 # 6. SECCIÓN: FÚTBOL (REGRESIÓN)
 #⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘#
+
 if selected == "Fútbol (Regresión)":
     st.markdown("""<div style="font-size: 2.8rem; font-weight: bold; line-height: 1.2; color: #FFFFFF; 
                 text-shadow: 2px 2px 8px #000000, 0px 0px 20px #000000; margin-bottom: 10px;"><i class="bi bi-graph-up-arrow" 
@@ -229,12 +232,12 @@ if selected == "Fútbol (Regresión)":
     valor_promedio = df_futbol['SquadMarketValue'].mean()
     # Sustituimos el máximo de goles por una tasa de victoria promedio (relevancia deportiva)
     victoria_media = (df_futbol['TotalWins'].mean() / df_futbol['MatchesPlayed'].mean()) * 100
-    # Jugadores internacionales (crucial para el valor)
+    # Jugadores internacionales (crucial para el valor según nuestro análisis)
     jugadores_int_total = df_futbol['NationalTeamPlayers'].sum()
     # Edad promedio global (factor clave de depreciación/valor)
     edad_mediana = df_futbol['AveragePlayerAge'].median()
 
-    # --- Renderizado de 5 Columnas ---
+    # --- Renderizado de las 5 Columnas ---
     col1, col2, col3, col4, col5 = st.columns(5)
     
     with col1:
@@ -242,13 +245,10 @@ if selected == "Fútbol (Regresión)":
     with col2:
         st.markdown(crear_tarjeta("bi bi-cash-stack", "Valor Promedio", f"{valor_promedio:,.1f} M€"), unsafe_allow_html=True)
     with col3:
-        # Ítem nuevo: Representa el éxito deportivo acumulado
         st.markdown(crear_tarjeta("bi bi-trophy", "% Victoria Media", f"{victoria_media:.1f}%"), unsafe_allow_html=True)
     with col4:
-        # Ítem nuevo: Factor de prestigio (reemplaza a los goles máximos)
         st.markdown(crear_tarjeta("bi bi-people", "Total Internacionales", f"{jugadores_int_total:,}"), unsafe_allow_html=True)
     with col5:
-        # Ítem nuevo: Factor demográfico (clave para el mercado)
         st.markdown(crear_tarjeta("bi bi-calendar-event", "Edad Media", f"{edad_mediana:.1f}"), unsafe_allow_html=True)
         
     st.write("") # Espacio
@@ -280,16 +280,16 @@ if selected == "Fútbol (Regresión)":
         with col_sort_f2:
             sentido_f = st.radio("Mostrar por orden:", ["Descendente", "Ascendente"], horizontal=True, key="sort_f_radio")
 
-        # Aplicar orden dinámico
+        # Aplicamos el orden dinámico
         df_mostrar_f = df_mostrar_f.sort_values(
             by=columna_orden_f, 
             ascending=(sentido_f == "Ascendente")
         ).reset_index(drop=True)
 
-        # --- AJUSTE DE ÍNDICE (Empezar en 1) ---
+        # --- AJUSTE DE ÍNDICE (Empezar en 1, importante porque es incómodo hasta el hp) ---
         df_mostrar_f.index = df_mostrar_f.index + 1
 
-        # --- LÓGICA DE "MOSTRAR 50 MÁS" CENTRADA ---
+        # --- LÓGICA TRAS "MOSTRAR 50 MÁS" CENTRADA ---
         if 'limit_f' not in st.session_state:
             st.session_state.limit_f = 50
 
@@ -310,7 +310,7 @@ if selected == "Fútbol (Regresión)":
         
         st.markdown("---")
         
-        # 3. ESTADÍSTICAS DESCRIPTIVAS MEJORADAS
+        # 3. ESTADÍSTICAS DESCRIPTIVAS MEJORADAS y definitivas 100% no FAKE
         st.markdown("<h3 style='color: #4cc9f0;'> Estadísticas Descriptivas</h3>", unsafe_allow_html=True)
         
         # Calculamos el describe, lo transponemos (.T) y renombramos las métricas
@@ -327,8 +327,6 @@ if selected == "Fútbol (Regresión)":
             .set_table_styles([{'selector': 'th', 'props': [('text-align', 'center')]}])
             
         st.dataframe(df_stats_estilizado, use_container_width=True)
-        
-        
         
     with tab2:
         st.markdown("<h3 style='color: #4cc9f0; text-align: center;'> Análisis Exploratorio Espacial (EDA)</h3>", unsafe_allow_html=True)
@@ -367,7 +365,7 @@ if selected == "Fútbol (Regresión)":
             # --- AÑADIMOS EL TÍTULO CON STREAMLIT ---
             st.markdown("<h4 style='text-align: center; color: #ffffff; font-size: 1.1rem; margin-bottom: 0;'> Eficiencia Ofensiva vs. Valor de Mercado</h4>", unsafe_allow_html=True)
             
-            # GRÁFICO 1: Traducido (sin el parámetro title)
+            # GRÁFICO 1: Traducimos (sin el parámetro title)
             fig1 = px.scatter(
                 df_futbol, x='TotalGoals', y='SquadMarketValue', 
                 size='StadiumCapacity', color='ForeignersPercentage',
@@ -430,7 +428,7 @@ if selected == "Fútbol (Regresión)":
         fig3.update_layout(plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)', dragmode='pan')
         st.plotly_chart(fig3, use_container_width=True, config=config_plotly)
 
-      # -------------------------------------------------------------------
+        # -------------------------------------------------------------------
         # GRÁFICOS 4, 5 y 6: Tendencias de Regresión (Justificación del modelo)
         # -------------------------------------------------------------------
         st.markdown("<br><hr style='border: 1px solid rgba(0, 229, 255, 0.2);'><br>", unsafe_allow_html=True)
@@ -481,7 +479,7 @@ if selected == "Fútbol (Regresión)":
     with tab3:
         st.markdown("<h3 style='color: #4cc9f0;'> Tratamiento de Datos Faltantes</h3>", unsafe_allow_html=True)
         
-        # 1. Explicación Teórica
+        # 1. Explicación Teórica mini
         st.write("En este proyecto, evaluamos dos enfoques principales para el tratamiento de datos nulos:")
         
         col_t1, col_t2 = st.columns(2)
@@ -503,7 +501,7 @@ if selected == "Fútbol (Regresión)":
 
         st.markdown("<br>", unsafe_allow_html=True)
 
-        # 2. Comparativa de Medias DINÁMICA (Cálculo en vivo)
+        # 2. Comparativa de Medias "DINÁMICA" (Cálculo en tiempo real)
         st.markdown("<h4 style='color: #4cc9f0;'> Comparativa de Medias (Cálculo Dinámico)</h4>", unsafe_allow_html=True)
         st.write("Cálculo en tiempo real del impacto de los métodos de imputación frente a la distribución original:")
         
@@ -556,17 +554,17 @@ if selected == "Fútbol (Regresión)":
         with st.expander(" Ver Corrección de Lógica de Negocio (Post-Imputación)"):
             st.write("Para evitar incoherencias donde el KNN generaba más asistencias que goles, aplicamos un techo basado en el ratio histórico real:")
             st.code("""
-# Ratio real calculado de asistencias por gol
-mask = df['TotalAssists'].notna() & df['TotalGoals'].notna()
-ratio = df.loc[mask, 'TotalAssists'].sum() / df.loc[mask, 'TotalGoals'].sum()
+                    # Ratio real calculado de asistencias por gol
+                    mask = df['TotalAssists'].notna() & df['TotalGoals'].notna()
+                    ratio = df.loc[mask, 'TotalAssists'].sum() / df.loc[mask, 'TotalGoals'].sum()
 
-# Corrección
-df_knn['TotalAssists'] = np.where(
-    df_knn['TotalAssists'] > df_knn['TotalGoals'], 
-    (df_knn['TotalGoals'] * ratio).round(), 
-    df_knn['TotalAssists']
-)
-            """, language="python")
+                    # Corrección
+                    df_knn['TotalAssists'] = np.where(
+                        df_knn['TotalAssists'] > df_knn['TotalGoals'], 
+                        (df_knn['TotalGoals'] * ratio).round(), 
+                        df_knn['TotalAssists']
+                    )
+                                """, language="python")
 
         st.markdown("""
         <div style="background-color: rgba(15, 20, 30, 0.8); border-left: 4px solid #fca311; padding: 15px; border-radius: 8px; margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.05); border-right: 1px solid rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.05);">
@@ -880,7 +878,7 @@ elif selected == "Salud (Clasificación)":
             st.markdown("<div class='section-header-blue'> Kruskal-Wallis (Variables Mixtas)</div>", unsafe_allow_html=True)
             st.write("Evaluando dependencia clínica:")
             
-            # Tarjeta de Variables Críticas en azul armonioso
+            # Tarjeta de Variables Críticas en azul armonioso super lindo wow
             st.markdown(f"""
                 <div class="card-cyber accent-royal">
                     <div class="title-test-blue" style="color: #4cc9f0;"><i class="bi bi-heart-pulse"></i> Análisis de Variables Críticas</div>
