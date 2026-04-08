@@ -1,0 +1,1 @@
+pip install statsmodels pandas numpy matplotlib seaborn scipy scikit-learn streamlit chess plotly streamlit_option_menu pillow
