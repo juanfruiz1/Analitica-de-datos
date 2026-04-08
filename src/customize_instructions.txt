@@ -1,0 +1,4 @@
+CONTROLES DE PERSONALIZACIÓN:
+- Teclas [ARRIBA] / [ABAJO]: Cambiar Tablero
+- Teclas [IZQUIERDA] / [DERECHA]: Cambiar Set de Piezas
+- Tecla [R]: Reiniciar Juego

@@ -3,74 +3,53 @@ import sqlite3
 import os
 
 #⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘#
-# 1. Definimos las rutas para evitar errores( vamos a crear la carpeta database si no existe)
+# 1. Definimos las rutas (crearemos la carpeta database si no existe)
 #⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘#
 
 DIR_ACTUAL = os.path.dirname(os.path.abspath(__file__))
 RUTA_DB = os.path.join(DIR_ACTUAL, "../database/proyecto_analitica.db")
 
 #⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘#
-# Rutas de los archivos CSV originales (¡Actualizado para el fútbol!):
+# Rutas de los archivos CSV originales (Actualizado: Jugadores y Ajedrez):
 #⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘#
 
-RUTA_FOOTBALL = os.path.join(DIR_ACTUAL, "../data/raw/FTP.csv")
-RUTA_NHANES = os.path.join(DIR_ACTUAL, "../data/raw/NHANES.csv")
+RUTA_JUGADORES = os.path.join(DIR_ACTUAL, "../data/raw/JUGADORES.csv")
+RUTA_AJEDREZ = os.path.join(DIR_ACTUAL, "../data/raw/lichess_db_puzzle.csv")
 
 #⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘#
-# creamos la función para la creación de la base de datos
+# Función para la creación de la base de datos
 #⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘#
 
 def crear_base_datos():
     
-    #⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘#
-    # 2. conectamos a SQLite (si el archivo no existe, lo crea automáticamente)
-    #⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘#
-    
+    # 2. Conectamos a SQLite
     conexion = sqlite3.connect(RUTA_DB)
     
     try:
-        #⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘#
-        # 3. Cargar los CSV en Pandas (CORREGIDO EL SEPARADOR AQUÍ)
-        #⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘#
+        # 3. Cargar los CSV en Pandas
+        print("Cargando JUGADORES.csv...")
+        df_jugadores = pd.read_csv(RUTA_JUGADORES, sep=',') 
         
-        df_football = pd.read_csv(RUTA_FOOTBALL, sep=',') 
+        print("Cargando muestra.csv (Ajedrez)...")
+        df_ajedrez = pd.read_csv(RUTA_AJEDREZ, sep=',')
         
-        df_nhanes = pd.read_csv(RUTA_NHANES, sep=',')
+        # 4. Enviamos los datos a SQLite creando las tablas con los nombres exactos
+        print("Creando tablas en la base de datos...")
+        # Guardamos como 'jugadores' y 'muestra' para que coincida con appvis.py
+        df_jugadores.to_sql('jugadores', conexion, if_exists='replace', index=False)
+        df_ajedrez.to_sql('muestra', conexion, if_exists='replace', index=False)
         
-        #⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘#
-        # 4. Enviamos los datos a SQLite para crear las tablas
-        #⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘#
+        print("✅ ¡Éxito! Base de datos actualizada con las tablas 'jugadores' y 'muestra' en database/proyecto_analitica.db")
         
-        df_football.to_sql('regresion_football', conexion, if_exists='replace', index=False)
-        
-        df_nhanes.to_sql('clasificacion_nhanes', conexion, if_exists='replace', index=False)
-        
-        #⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘#
-        # Mensaje puramente estético
-        #⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘#
-        
-        print("✅ ¡Éxito! Base de datos y tablas actualizadas correctamente en database/proyecto_analitica.db")
-        
-    #⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘#
-    # En caso de error
-    #⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘#
-    
     except Exception as e:
         print(f"❌ Ocurrió un error: {e}")
         
     finally:
-        
-        #⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘#
-        # Siempre tenemos que cerramos la conexión
-        #⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘#
-        
+        # Siempre cerramos la conexión
         conexion.close()
 
 if __name__ == "__main__":
     
-    #⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘#
-    # Crear la carpeta database si por casualidad no existe
-    #⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘#
-    
+    # Crear la carpeta database si no existe
     os.makedirs(os.path.join(DIR_ACTUAL, "../database"), exist_ok=True)
     crear_base_datos()

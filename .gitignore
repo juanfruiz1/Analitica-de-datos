@@ -1,0 +1,5 @@
+# Bases de datos y datasets pesados
+*.db
+*.csv
+data/raw/
+database/
