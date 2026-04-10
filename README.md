@@ -1,1 +1,1 @@
-pip install statsmodels pandas numpy matplotlib seaborn scipy scikit-learn streamlit chess plotly streamlit_option_menu pillow
+pip install statsmodels pandas numpy matplotlib seaborn scipy scikit-learn streamlit chess plotly streamlit_option_menu pillow statsmodels tqdm networkx opencv-python pillow 
