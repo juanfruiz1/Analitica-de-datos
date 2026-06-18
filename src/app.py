@@ -7,10 +7,19 @@ import tempfile
 import shutil
 import sys
 import chess
+import joblib
+import numpy as np
 from streamlit_option_menu import option_menu
 import streamlit.components.v1 as components
 import plotly.express as px
+import plotly.graph_objects as go
 import time
+from boarddataextraction import ChessFeatureExtractor
+
+# --- DECLARACIÓN DEL COMPONENTE DE TABLERO INTERACTIVO ---
+_BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+_SRC_DIR = os.path.dirname(os.path.abspath(__file__))
+chessboard_component = components.declare_component("chessboard", path=os.path.join(_SRC_DIR, "chessboard_component"))
 
 #################################################################################
 ################## RECORDAR PIP INSTALL STATSMODELS #############################
@@ -228,6 +237,22 @@ def init_connection():
 
 conn = init_connection()
 
+# --- CARGA DE MODELOS ENTRENADOS (.joblib) ---
+@st.cache_resource
+def load_models():
+    """Carga el pipeline de regresión y el pipeline de clasificación desde models/."""
+    ruta_models = os.path.join(_BASE_DIR, 'models')
+    model_reg = joblib.load(os.path.join(ruta_models, 'model_regression.joblib'))
+    model_clf = joblib.load(os.path.join(ruta_models, 'model_classification.joblib'))
+    features_reg = joblib.load(os.path.join(ruta_models, 'features_regression.joblib'))
+    features_clf = joblib.load(os.path.join(ruta_models, 'features_classification.joblib'))
+    return model_reg, model_clf, features_reg, features_clf
+
+model_regression, model_classification, features_regression, features_classification = load_models()
+
+# Mapeo de las 4 clases del clasificador XGBoost a niveles de dificultad
+CLASES_DIFICULTAD = {0: 'Principiante', 1: 'Intermedio', 2: 'Avanzado', 3: 'Maestro'}
+
 @st.cache_data
 def load_data():
     # Cargamos el dataset 
@@ -340,7 +365,7 @@ if selected == "Fútbol (Regresión)":
     st.write("") # Espaciesito
     
     # --- Pestañas ---
-    tab1, tab2, tab3, tab4 = st.tabs(["Estadísticas Descriptivas", "Gráficos Principales", "Imputaciones", "Pruebas Estadísticas"])
+    tab1, tab2, tab3, tab4, tab_pred_f = st.tabs(["Estadísticas Descriptivas", "Gráficos Principales", "Imputaciones", "Pruebas Estadísticas", "Predicción"])
     
     with tab1:
         st.markdown("<h3 style='color: #4cc9f0;'> Base de Datos Procesada</h3>", unsafe_allow_html=True)
@@ -706,12 +731,95 @@ if selected == "Fútbol (Regresión)":
 </ul>
 </div>
 """, unsafe_allow_html=True)
+
+    # ---------------------------------------------------------
+    # PESTAÑA 5: PREDICCIÓN (MODELO DE REGRESIÓN)
+    # ---------------------------------------------------------
+    with tab_pred_f:
+        st.markdown("<h3 style='color: #4cc9f0;'> Predicción de Valor de Mercado</h3>", unsafe_allow_html=True)
+        st.markdown("<p style='color:#cbd5e1;'>Ingresa las variables del jugador para predecir su valor de mercado (€) con el modelo de <b>Random Forest</b> entrenado.</p>", unsafe_allow_html=True)
+
+        # Listas de opciones categóricas derivadas de las features procesadas
+        lista_pies = sorted([c.replace('pie_habil_', '') for c in features_regression if c.startswith('pie_habil_')])
+        lista_posiciones = sorted([c.replace('posicion_principal_', '') for c in features_regression if c.startswith('posicion_principal_')])
+        lista_nacionalidades = sorted([c.replace('nacionalidad_', '') for c in features_regression if c.startswith('nacionalidad_')])
+        lista_ligas = sorted([c.replace('liga_actual_', '') for c in features_regression if c.startswith('liga_actual_')])
+
+        with st.form("form_regresion"):
+            st.markdown("<h5 style='color:#4cc9f0; border-bottom:1px solid rgba(0,229,255,0.3); padding-bottom:6px;'>Perfil del Jugador</h5>", unsafe_allow_html=True)
+            c1, c2, c3 = st.columns(3)
+            with c1:
+                edad = st.number_input("Edad al momento", min_value=15, max_value=45, value=25)
+                mes_nacimiento = st.slider("Mes de Nacimiento", 1, 12, 6)
+                pie = st.selectbox("Pie Hábil", lista_pies, index=lista_pies.index('right') if 'right' in lista_pies else 0)
+            with c2:
+                altura = st.number_input("Altura (cm)", min_value=150, max_value=210, value=180)
+                posicion = st.selectbox("Posición Principal", lista_posiciones, index=lista_posiciones.index('Centre-Forward') if 'Centre-Forward' in lista_posiciones else 0)
+            with c3:
+                nacionalidad = st.selectbox("Nacionalidad", lista_nacionalidades, index=lista_nacionalidades.index('Colombia') if 'Colombia' in lista_nacionalidades else 0)
+                liga = st.selectbox("Liga Actual", lista_ligas, index=lista_ligas.index('ES1') if 'ES1' in lista_ligas else 0)
+
+            st.markdown("<h5 style='color:#4cc9f0; border-bottom:1px solid rgba(0,229,255,0.3); padding-bottom:6px; margin-top:15px;'>Rendimiento (Últimos 12 meses)</h5>", unsafe_allow_html=True)
+            c4, c5, c6 = st.columns(3)
+            with c4:
+                minutos = st.number_input("Minutos Jugados", min_value=0, max_value=6000, value=2500)
+                partidos = st.number_input("Partidos Jugados", min_value=0, max_value=70, value=35)
+                goles = st.number_input("Goles", min_value=0, max_value=60, value=8)
+            with c5:
+                asistencias = st.number_input("Asistencias", min_value=0, max_value=40, value=5)
+                amarillas = st.number_input("Tarjetas Amarillas", min_value=0, max_value=30, value=4)
+                rojas = st.number_input("Tarjetas Rojas", min_value=0, max_value=10, value=0)
+            with c6:
+                participacion = st.number_input("Participación Goles p/90", min_value=0.0, max_value=3.0, value=0.45, format="%.2f")
+                partidos_sel = st.number_input("Partidos Selección (12m)", min_value=0, max_value=20, value=3)
+                convocatorias_sel = st.number_input("Convocatorias Históricas Sel.", min_value=0, max_value=150, value=12)
+
+            st.markdown("<h5 style='color:#4cc9f0; border-bottom:1px solid rgba(0,229,255,0.3); padding-bottom:6px; margin-top:15px;'>Mercado</h5>", unsafe_allow_html=True)
+            c7, c8 = st.columns(2)
+            with c7:
+                dias_contrato = st.number_input("Días para fin de contrato", min_value=0, max_value=3000, value=365)
+            with c8:
+                valor_historico = st.number_input("Valor Máx. Histórico Previo (€)", min_value=0, max_value=200000000, value=5000000, step=500000)
+
+            submitted = st.form_submit_button("Predict", type="primary", use_container_width=True)
+
+        if submitted:
+            input_dict = {
+                'edad_al_momento': edad,
+                'mes_de_nacimiento': mes_nacimiento,
+                'altura_cm': altura,
+                'pie_habil': pie,
+                'posicion_principal': posicion,
+                'nacionalidad': nacionalidad,
+                'minutos_jugados_12m': minutos,
+                'partidos_jugados_12m': partidos,
+                'goles_12m': goles,
+                'asistencias_12m': asistencias,
+                'tarjetas_amarillas_12m': amarillas,
+                'tarjetas_rojas_12m': rojas,
+                'participacion_goles_p90': participacion,
+                'partidos_seleccion_12m': partidos_sel,
+                'convocatorias_historicas_seleccion': convocatorias_sel,
+                'dias_para_fin_contrato': dias_contrato,
+                'valor_maximo_historico_previo': valor_historico,
+                'liga_actual': liga,
+            }
+            df_input = pd.DataFrame([input_dict])
+            try:
+                prediccion = model_regression.predict(df_input)[0]
+                valor_eur = float(prediccion)
+                st.markdown(f"""
+                <div style="background-color: rgba(16, 185, 129, 0.1); border: 2px solid #10B981; border-radius: 12px; padding: 30px; text-align: center; margin-top: 20px; box-shadow: 0 0 30px rgba(16, 185, 129, 0.3);">
+                    <p style="color:#8b949e; margin:0; font-size:0.9rem;">Valor de Mercado Predicho</p>
+                    <h2 style="color:#10B981; margin:10px 0; font-size:2.4rem;">€ {valor_eur:,.0f}</h2>
+                </div>
+                """, unsafe_allow_html=True)
+            except Exception as e:
+                st.error(f"Error al generar la predicción: {e}")
             
             
 
             
-#⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘#
-
 #⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘#
 # 7. SECCIÓN: AJEDREZ (CLASIFICACIÓN Y TÁCTICA)
 #⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘#
@@ -757,12 +865,13 @@ elif selected == "Ajedrez (Clasificación)":
     # =========================================================
     # NAVEGACIÓN POR PESTAÑAS (Fluidez Instantánea)
     # =========================================================
-    tab1_a, tab_eda_a, tab2_a, tab3_a, tab4_a = st.tabs([
+    tab1_a, tab_eda_a, tab2_a, tab3_a, tab4_a, tab_pred_a = st.tabs([
         "Estadísticas Descriptivas", 
         "Análisis Exploratorio (EDA)", 
         "Gráficos y Tableros", 
         "Imputación", 
-        "Pruebas Estadísticas"
+        "Pruebas Estadísticas",
+        "Predicción"
     ])
 
     # ---------------------------------------------------------
@@ -1141,3 +1250,103 @@ $$d_C = \|\vec{C}_w - \vec{C}_b\|_\infty = \max(|C_{w,x} - C_{b,x}|, |C_{w,y} - 
                 <div class="badge-rel-p">✅ JUSTIFICA EL USO DE MODELOS BASADOS EN ÁRBOLES (RF/XGBoost)</div>
             </div>
         """, unsafe_allow_html=True)
+
+    # ---------------------------------------------------------
+    # PESTAÑA 6: PREDICCIÓN (MODELO DE CLASIFICACIÓN)
+    # ---------------------------------------------------------
+    with tab_pred_a:
+        st.markdown("<h3 style='color: #4cc9f0;'> Predicción de Dificultad de Puzzle</h3>", unsafe_allow_html=True)
+        st.markdown("<p style='color:#cbd5e1;'>Monta una posición en el tablero interactivo, realiza el primer movimiento, y el modelo de <b>XGBoost</b> predecirá el nivel de dificultad cognitiva.</p>", unsafe_allow_html=True)
+
+        extractor = ChessFeatureExtractor()
+
+        # --- Componente de tablero interactivo (chessboard.js) ---
+        board_state = chessboard_component(key="chess_board", default={"phase": "setup", "setup_fen": "", "first_move_uci": ""})
+
+        st.markdown("<hr style='border: 1px solid rgba(0, 229, 255, 0.2); margin-top:20px;'>", unsafe_allow_html=True)
+
+        # --- Inputs adicionales del puzzle ---
+        st.markdown("<h5 style='color:#4cc9f0; border-bottom:1px solid rgba(0,229,255,0.3); padding-bottom:6px;'>Metadatos del Puzzle</h5>", unsafe_allow_html=True)
+        cm1, cm2, cm3 = st.columns(3)
+        with cm1:
+            rating_dev = st.number_input("Rating Deviation", min_value=0, max_value=600, value=80)
+        with cm2:
+            popularity = st.number_input("Popularity", min_value=-100, max_value=100, value=90)
+        with cm3:
+            nb_plays = st.number_input("NbPlays", min_value=0, max_value=10000000, value=1000, step=100)
+
+        themes_input = st.text_input("Themes (separados por espacio)", value="mate fork", help="Ej: 'mate fork pin endgame'")
+
+        submitted_a = st.button("Predict", type="primary", use_container_width=True, key="btn_predict_clf")
+
+        if submitted_a:
+            if not board_state or not isinstance(board_state, dict) or board_state.get("phase") != "done":
+                st.warning("⚠️ Primero monta la posición y realiza el primer movimiento en el tablero interactivo (debes llegar a la fase 'Posición y movimiento listos').")
+            else:
+                setup_fen = board_state.get("setup_fen", "")
+                first_move = board_state.get("first_move_uci", "")
+                if not setup_fen or not first_move:
+                    st.warning("⚠️ Faltan datos: la posición o el primer movimiento no están completos.")
+                else:
+                    try:
+                        # Calcular las 6 features del tablero con el extractor
+                        feats = extractor.get_all_features(setup_fen, first_move)
+                        # Construir el DataFrame con las 10 features de entrada del pipeline
+                        input_dict = {
+                            'RatingDeviation': rating_dev,
+                            'Popularity': popularity,
+                            'NbPlays': nb_plays,
+                            'Themes': themes_input,
+                            'branching_factor': feats.get('branching_factor', 0),
+                            'forcing_index': feats.get('forcing_index', 0.0),
+                            'graph_density': feats.get('graph_density', 0.0),
+                            'tension_components': feats.get('tension_components', 0),
+                            'spatial_entropy': feats.get('spatial_entropy', 0.0),
+                            'com_chebyshev_dist': feats.get('com_chebyshev_dist', 0.0),
+                        }
+                        df_input_a = pd.DataFrame([input_dict])
+
+                        clase_pred = int(model_classification.predict(df_input_a)[0])
+                        probas = model_classification.predict_proba(df_input_a)[0]
+
+                        nombre_clase = CLASES_DIFICULTAD.get(clase_pred, f"Clase {clase_pred}")
+
+                        # --- Resultado: clase predicha ---
+                        st.markdown(f"""
+                        <div style="background-color: rgba(247, 37, 133, 0.1); border: 2px solid #f72585; border-radius: 12px; padding: 25px; text-align: center; margin-top: 15px; box-shadow: 0 0 25px rgba(247, 37, 133, 0.3);">
+                            <p style="color:#8b949e; margin:0; font-size:0.9rem;">Nivel de Dificultad Predicho</p>
+                            <h2 style="color:#f72585; margin:8px 0; font-size:2.2rem;">{nombre_clase}</h2>
+                        </div>
+                        """, unsafe_allow_html=True)
+
+                        # --- Probabilidades por clase ---
+                        st.markdown("<h5 style='color:#4cc9f0; margin-top:20px;'>Probabilidades por Clase</h5>", unsafe_allow_html=True)
+                        colores = ['#00e5ff', '#4cc9f0', '#f72585', '#7209b7']
+                        nombres = [CLASES_DIFICULTAD.get(i, f"Clase {i}") for i in model_classification.classes_]
+                        fig_prob = go.Figure(data=[go.Bar(
+                            x=nombres,
+                            y=[float(p) for p in probas],
+                            marker_color=colores[:len(nombres)],
+                            text=[f"{float(p)*100:.1f}%" for p in probas],
+                            textposition='outside',
+                        )])
+                        fig_prob.update_layout(
+                            paper_bgcolor='rgba(0,0,0,0)',
+                            plot_bgcolor='rgba(0,0,0,0)',
+                            font=dict(color='#e0e0e0'),
+                            yaxis=dict(title='Probabilidad', range=[0, 1], tickformat='.0%', gridcolor='rgba(255,255,255,0.1)'),
+                            xaxis=dict(title=None),
+                            margin=dict(t=10, b=10),
+                            height=320,
+                        )
+                        st.plotly_chart(fig_prob, use_container_width=True, config={'displayModeBar': False})
+
+                        # --- Features calculadas del tablero (info) ---
+                        with st.expander("Ver features del tablero calculadas"):
+                            st.markdown(f"**FEN de la posición:** `{setup_fen}`")
+                            st.markdown(f"**Primer movimiento (UCI):** `{first_move}`")
+                            feats_df = pd.DataFrame([{k: v for k, v in feats.items() if k != '_empty'}])
+                            st.dataframe(feats_df.T.rename(columns={0: 'Valor'}), use_container_width=True)
+
+                    except Exception as e:
+                        st.error(f"Error al generar la predicción: {e}")

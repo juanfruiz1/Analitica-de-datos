@@ -3,3 +3,25 @@
 *.csv
 data/raw/
 database/
+notebooks/ .pkl
+# Modelos y archivos pesados
+*.pkl
+*.joblib
+*.webp
+
+# Carpetas de datos y ambiente
+data/
+venv/
+.venv/
+__pycache__/
+.ipynb_checkpoints/
+
+# Secretos (API keys, etc.)
+.env
+.env.local
+.streamlit/secrets.toml
+
+src/chat_openai.py
+src/demo_openai.py
+src/openai_client.py
+src/verify_openai_key.py
